@@ -7,34 +7,30 @@
 <style>
 body{font-family:sans-serif;background:#fff0f6;text-align:center;padding:10px}
 .mesa{background:#000;color:#fff;padding:12px;border-radius:15px;margin-bottom:10px}
-.carton{display:inline-block;border-radius:15px;padding:10px;margin:8px;min-width:240px;transition:0.3s}
+.carton{display:inline-block;border-radius:15px;padding:10px;margin:8px;min-width:240px}
 .celda{width:42px;height:42px;border:1px solid #000;display:inline-flex;align-items:center;justify-content:center;margin:1px;font-weight:bold;background:#fff;border-radius:6px}
 .marcada{background:#ff1493!important;color:#fff;transform:scale(1.1)}
-.colores button{width:28px;height:28px;border-radius:50%;border:2px solid #fff;margin:3px;cursor:pointer}
-button{padding:10px 18px;border-radius:20px;border:none;font-weight:bold;cursor:pointer}
+.colores button{width:28px;height:28px;border-radius:50%;border:2px solid #fff;margin:3px}
+button{padding:10px 18px;border-radius:20px;border:none;font-weight:bold}
 .cantar{background:#000;color:#fff;font-size:18px}
 </style>
 </head>
 <body>
 <div class="mesa">
-<h2 id="infoMesa">🎱 Mesa: MIERCOLES 🖤🎀</h2>
-<p>Dinámica: <select id="patron"><option value="linea">LÍNEA (5 en fila)</option><option value="4esquinas">4 ESQUINAS</option><option value="cruz">CRUZ</option><option value="x">X</option><option value="full" selected>BINGO COMPLETO</option></select> | <span id="jugadoras">1 jugadora</span></p>
+<h2>Mesa: MIERCOLES 🖤🎀</h2>
+<p>Dinámica: <select id="patron"><option value="linea">LINEA</option><option value="4esquinas">4 ESQUINAS</option><option value="cruz">CRUZ</option><option value="x">X</option><option value="full" selected>BINGO COMPLETO</option></select> | <span id="jugadoras">1 jugadora</span></p>
 <p id="ultimaBola" style="font-size:32px">Bola: --</p>
 <button class="cantar" onclick="cantarBola()">🔥 CANTAR BOLA</button>
 <button onclick="agregarCarton()">+ Carton</button>
 </div>
 <div id="cartones"></div>
-
-function crearCarton(){let nums=[];for(let i=0;i<15;i++)
+<script>
 let cartones=[]; let bolas=[]; let colores=["#ffb6d9","#a0e7ff","#b9fbc0","#fff475","#000000","#ff1493"];
-function crearCarton(){let nums=[];for(let i=0;i<15;i++)nums.push(Math.floor(Math.random()*75)+1); return {nums, marcados:[], color:colores[0]}}
+function crearCarton(){let s=new Set();while(s.size<15)s.add(Math.floor(Math.random()*75)+1);return {nums:[...s],marcados:[],color:colores[0]}}
 function agregarCarton(){if(cartones.length>=6)return alert("Max 6");cartones.push(crearCarton());render()}
-function render(){let c=document.getElementById("cartones");c.innerHTML="";cartones.forEach((cart,idx)=>{
-let d=document.createElement("div");d.className="carton";d.style.background=cart.color; if(cart.color=="#000000")d.style.color="#fff";
-d.innerHTML=`<b>Carton ${idx+1}</b><div class="colores">${colores.map(col=>`<button style="background:${col}" onclick="cartones[${idx}].color='${col}';render()"></button>`).join("")}</div><div>${cart.nums.map(n=>`<div class="celda ${cart.marcados.includes(n)?'marcada':''}" onclick="marcar(${idx},${n})">${n}</div>`).join("")}</div>`;c.appendChild(d);})}
-function marcar(i,n){if(!bolas.includes(n))return; if(!cartones[i].marcados.includes(n))cartones[i].marcados.push(n); render(); checkWin(i)}
-function cantarBola(){let n;do{n=Math.floor(Math.random()*75)+1}while(bolas.includes(n)); bolas.push(n); document.getElementById("ultimaBola").innerText="Bola: "+n+" ("+bolas.length+")"; render()}
-function checkWin(i){let p=document.getElementById("patron").value; let m=cartones[i].marcados; let total=cartones[i].nums; if(p=="full"&&m.length==15)alert("¡BINGO COMPLETO Carton "+(i+1)+"! 🎉"); if(p=="linea"&&m.length>=5)alert("¡LINEA Carton "+(i+1)+"!"); if(p=="4esquinas"&&[total[0],total[4],total[10],total[14]].every(x=>m.includes(x)))alert("¡4 ESQUINAS!")}
+function render(){let c=document.getElementById("cartones");c.innerHTML="";cartones.forEach((cart,idx)=>{let d=document.createElement("div");d.className="carton";d.style.background=cart.color;if(cart.color=="#000000")d.style.color="#fff";d.innerHTML=`<b>Carton ${idx+1}</b><div class="colores">${colores.map(col=>`<button style="background:${col}" onclick="cartones[${idx}].color='${col}';render()"></button>`).join("")}</div><div>${cart.nums.map(n=>`<div class="celda ${cart.marcados.includes(n)?'marcada':''}" onclick="marcar(${idx},${n})">${n}</div>`).join("")}</div>`;c.appendChild(d);})}
+function marcar(i,n){if(!bolas.includes(n))return;if(!cartones[i].marcados.includes(n))cartones[i].marcados.push(n);render()}
+function cantarBola(){let n;do{n=Math.floor(Math.random()*75)+1}while(bolas.includes(n));bolas.push(n);document.getElementById("ultimaBola").innerText="Bola: "+n+" ("+bolas.length+")";render()}
 agregarCarton();
 </script>
 </body>
