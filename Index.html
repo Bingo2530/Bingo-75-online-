@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo 75 - Barrio Caimbé</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{font-family:sans-serif;background:#0f172a;color:white}
+.carton{background:white;color:#0f172a;border-radius:16px;padding:10px}
+.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-weight:800;border-radius:8px;border:1.5px solid #e2e8f0}
+.cell.marked{background:#facc15!important;color:#000}
+.cell.free{background:#0f172a;color:#facc15}
+</style>
+</head>
+<body>
+<header class="p-3 bg-slate-900 border-b border-yellow-500/20 flex justify-between">
+<div class="flex gap-2 items-center"><div class="w-10 h-10 rounded-full bg-yellow-400 text-black flex items-center justify-center font-black">75</div><h1 class="font-black">BINGO 75<br><span class="text-yellow-400 text-xs">Barrio Caimbé</span></h1></div>
+<div id="bolaActual" class="hidden"><div id="bolaGrande" class="w-12 h-12 rounded-full bg-yellow-400 text-black flex items-center justify-center font-black">--</div></div>
+</header>
+<main class="p-4 max-w-6xl mx-auto">
+<div class="bg-slate-800 rounded-2xl p-4 mb-4">
+<div class="flex flex-wrap gap-2">
+<button id="btnAdd" class="bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl">+ Agregar cartón</button>
+<button id="btnNew" class="bg-slate-700 px-4 py-2 rounded-xl">🔄 Nuevos</button>
+<button id="btnClear" class="bg-slate-700 px-4 py-2 rounded-xl">🧹 Limpiar</button>
+<span id="contador" class="ml-auto bg-slate-900 px-3 py-1 rounded-full text-sm">1 cartón</span>
+</div>
+<div class="flex gap-2 mt-3 flex-wrap">
+<button id="btnCantar" class="flex-1 bg-yellow-400 text-black font-black py-3 rounded-xl text-lg">🎱 CANTAR BOLA</button>
+<button id="btnAuto" class="bg-slate-700 px-4 py-3 rounded-xl">▶️ Auto</button>
+</div>
+<div id="historial" class="flex flex-wrap gap-1 mt-2"></div>
+<p class="text-xs text-slate-400 mt-1">Bolas: <span id="totalBolas">0</span>/75</p>
+</div>
+<div id="cartonesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</div>
+<div id="ganador" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6"><div class="bg-white text-black rounded-3xl p-8 text-center"><div class="text-6xl">🎉</div><h2 class="text-3xl font-black">¡BINGO!</h2><p id="textoGanador"></p><button onclick="document.getElementById('ganador').classList.add('hidden')" class="mt-5 w-full bg-yellow-400 font-black py-3 rounded-xl">Seguir</button></div></div>
+</main>
+<script>
+const RANGOS=[[1,15],[16,30],[31,45],[46,60],[61,75]];let cartones=[],bolas=new Set(),auto=null;
+function gen(id){let cols=[];for(let c=0;c<5;c++){let n=[],r=RANGOS[c];while(n.length<5){let v=Math.floor(Math.random()*(r[1]-r[0]+1))+r[0];if(!n.includes(v))n.push(v)}n.sort((a,b)=>a-b);cols.push(n)}let filas=[];for(let r=0;r<5;r++){let f=[];for(let c=0;c<5;c++)f.push(cols[c][r]);filas.push(f)}filas[2][2]=0;return{id,filas,marc:new Set(['2-2'])}}
+function render(){let c=document.getElementById('cartonesContainer');c.innerHTML='';cartones.forEach((ct,i)=>{let d=document.createElement('div');d.className='carton';let h=`<div class="flex justify-between mb-2"><span class="font-black">Cartón ${i+1}</span><button onclick="rem(${i})" class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">✕</button></div><div class="grid grid-cols-5 gap-1 mb-1">${['B','I','N','G','O'].map(l=>`<div class="text-center font-black">${l}</div>`).join('')}</div><div class="grid grid-cols-5 gap-1.5">`;for(let r=0;r<5;r++)for(let cc=0;cc<5;cc++){let v=ct.filas[r][cc],k=`${r}-${cc}`,m=ct.marc.has(k),free=v===0;h+=`<div data-i="${i}" data-k="${k}" class="cell ${free?'free':''} ${m?'marked':''}">${free?'★':v}</div>`}h+='</div>';d.innerHTML=h;c.appendChild(d)});document.getElementById('contador').textContent=cartones.length+' cartón'+(cartones.length>1?'es':'');document.querySelectorAll('.cell').forEach(e=>{if(e.classList.contains('free'))return;e.onclick=()=>{let i=e.dataset.i,k=e.dataset.k;if(cartones[i].marc.has(k))cartones[i].marc.delete(k);else cartones[i].marc.add(k);e.classList.toggle('marked');ver()}})}
+function rem(i){if(cartones.length<=1)return alert('Mínimo 1');cartones.splice(i,1);render()}
+function add(){if(cartones.length>=6)return alert('Máx 6');cartones.push(gen(Date.now()));render()}
+function cantar(){if(bolas.size>=75)return alert('Fin');let n;do{n=Math.floor(Math.random()*75)+1}while(bolas.has(n));bolas.add(n);document.getElementById('bolaActual').classList.remove('hidden');document.getElementById('bolaGrande').textContent=(n<=15?'B':n<=30?'I':n<=45?'N':n<=60?'G':'O')+'-'+n;let h=document.getElementById('historial');let chip=document.createElement('div');chip.className='w-8 h-8 rounded-full bg-slate-700 border border-yellow-500/30 flex items-center justify-center text-xs';chip.textContent=n;h.prepend(chip);document.getElementById('totalBolas').textContent=bolas.size;cartones.forEach(ct=>{for(let r=0;r<5;r++)for(let cc=0;cc<5;cc++)if(bolas.has(ct.filas[r][cc]))ct.marc.add(`${r}-${cc}`)});render();ver()}
+function ver(){cartones.forEach((ct,i)=>{let win=false;for(let r=0;r<5;r++){let ok=true;for(let cc=0;cc<5;cc++)if(!ct.marc.has(`${r}-${cc}`))ok=false;if(ok)win=true}for(let cc=0;cc<5;cc++){let ok=true;for(let r=0;r<5;r++)if(!ct.marc.has(`${r}-${cc}`))ok=false;if(ok)win=true}let d1=true,d2=true;for(let k=0;k<5;k++){if(!ct.marc.has(`${k}-${k}`))d1=false;if(!ct.marc.has(`${k}-${4-k}`))d2=false}if(d1||d2)win=true;if(win){document.getElementById('textoGanador').textContent='Cartón '+(i+1);document.getElementById('ganador').classList.remove('hidden')}})}
+document.getElementById('btnAdd').onclick=add;document.getElementById('btnNew').onclick=()=>{let c=cartones.length;cartones=[];for(let i=0;i<c;i++)cartones.push(gen(Date.now()+i));bolas.clear();document.getElementById('historial').innerHTML='';document.getElementById('totalBolas').textContent='0';render()};document.getElementById('btnClear').onclick=()=>{cartones.forEach(ct=>ct.marc=new Set(['2-2']));render()};document.getElementById('btnCantar').onclick=cantar;document.getElementById('btnAuto').onclick=()=>{if(auto){clearInterval(auto);auto=null;document.getElementById('btnAuto').textContent='▶️ Auto'}else{auto=setInterval(cantar,3000);document.getElementById('btnAuto').textContent='⏸️ Pausa'}};add();
+</script>
+</body>
+</html>
