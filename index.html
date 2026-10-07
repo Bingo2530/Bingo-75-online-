@@ -1,1 +1,125 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bingo 75 Caimbe ONLINE</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:sans-serif;background:#0f172a;color:#fff;padding:12px}.header{text-align:center;padding:12px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:16px;margin-bottom:12px}.badge{display:inline-block;background:#22c55e;color:#000;font-weight:800;padding:4px 10px;border-radius:20px;font-size:12px;margin-top:6px}.main{display:grid;gap:12px;max-width:900px;margin:0 auto}@media(min-width:700px){.main{grid-template-columns:320px 1fr}}.panel{background:#1e293b;border-radius:16px;padding:16px;border:1px solid #334155}.bola-grande{width:140px;height:140px;margin:0 auto;background:radial-gradient(circle at 30% 30%,#fde047,#f59e0b);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#000;font-weight:900;border:6px solid #fff}.btn{width:100%;padding:16px;border:none;border-radius:12px;font-weight:800;font-size:18px;margin-top:10px}.btn-cantar{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}.btn-reset{background:#334155;color:#94a3b8;font-size:14px;padding:10px}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.col{background:#0f172a;border-radius:10px;padding:6px;text-align:center}.b{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:#1e293b;border:1px solid #334155;color:#64748b;margin:2px}.b.on{background:#f59e0b;color:#000;border-color:#fff}.hist{display:flex;gap:6px;overflow-x:auto;padding:6px 0}.hi{min-width:44px;height:44px;background:#f59e0b;color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}.carton{max-width:340px;margin:20px auto;background:#fff;border-radius:12px;padding:10px;color:#000}.cg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.cc{aspect-ratio:1;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer}.cc.on{background:#22c55e;color:#fff}.bolas{display:flex;flex-wrap:wrap;justify-content:center;min-height:180px}</style></head><body><div class="header"><h1>BINGO 75</h1><div>Barrio Caimbé - Boa Vista</div><div class="badge">● ONLINE - Todos ven la misma bola</div></div><div class="main"><div class="panel" style="text-align:center"><div style="font-size:12px;color:#94a3b8">BOLA ACTUAL</div><div class="bola-grande"><span id="L">-</span><span style="font-size:52px" id="N">--</span></div><button class="btn btn-cantar" onclick="cantar()">🎲 CANTAR BOLA</button><button class="btn btn-reset" onclick="reset()">Reiniciar (admin)</button><div id="est" style="font-size:13px;color:#94a3b8;margin-top:8px">Conectando...</div><div class="hist" id="his"></div></div><div class="panel"><div class="grid"><div class="col"><b style="color:#ef4444">B</b><div class="bolas" id="colB"></div></div><div class="col"><b style="color:#f59e0b">I</b><div class="bolas" id="colI"></div></div><div class="col"><b style="color:#22c55e">N</b><div class="bolas" id="colN"></div></div><div class="col"><b style="color:#3b82f6">G</b><div class="bolas" id="colG"></div></div><div class="col"><b style="color:#a855f7">O</b><div class="bolas" id="colO"></div></div></div><div class="carton"><div style="text-align:center;font-weight:900;letter-spacing:4px">B I N G O</div><div class="cg" id="carton"></div><div style="text-align:center;margin-top:8px"><button onclick="genCarton()" style="padding:6px 12px;border-radius:8px;border:none;background:#0f172a;color:#fff">Nuevo Cartón</button></div></div></div></div><script>const URL='https://fueinabwnlswcahofcjq.supabase.co';const KEY='sb_publishable_BeKRsHiTBwnzs6fXS4aVyw_WvijjCvw';const sb=supabase.createClient(URL,KEY);let cant=[];let act=0;function letra(n){if(n<=15)return'B';if(n<=30)return'I';if(n<=45)return'N';if(n<=60)return'G';return'O';}function tablero(){const r={B:[1,15],I:[16,30],N:[31,45],G:[46,60],O:[61,75]};for(let k in r){const c=document.getElementById('col'+k);c.innerHTML='';for(let i=r[k][0];i<=r[k][1];i++){let d=document.createElement('div');d.className='b';d.id='b-'+i;d.textContent=i;c.appendChild(d);}}}function ui(){document.querySelectorAll('.b').forEach(x=>x.classList.remove('on'));cant.forEach(n=>{let e=document.getElementById('b-'+n);if(e)e.classList.add('on');});if(act){document.getElementById('L').textContent=letra(act);document.getElementById('N').textContent=act;}let h=document.getElementById('his');h.innerHTML='';[...cant].reverse().slice(0,12).forEach(n=>{let d=document.createElement('div');d.className='hi';d.textContent=letra(n)+n;h.appendChild(d);});document.getElementById('est').textContent=cant.length?cant.length+'/75':'¡Conectado!';document.querySelectorAll('.cc[data-n]').forEach(e=>{if(cant.includes(+e.dataset.n))e.classList.add('on');});}async function init(){tablero();genCarton();let {data}=await sb.from('bingo_juego').select('*').eq('id',1).single();if(data){cant=data.historial?data.historial.split(',').filter(x=>x).map(Number):[];act=data.bola_actual||0;ui();}sb.channel('bingo').on('postgres_changes',{event:'*',schema:'public',table:'bingo_juego',filter:'id=eq.1'},p=>{let d=p.new;cant=d.historial?d.historial.split(',').filter(x=>x).map(Number):[];act=d.bola_actual||0;ui();}).subscribe();}async function cantar(){if(cant.length>=75)return;let n;do{n=Math.floor(Math.random()*75)+1}while(cant.includes(n));cant.push(n);act=n;ui();await sb.from('bingo_juego').update({bola_actual:n,historial:cant.join(',')}).eq('id',1);}async function reset(){if(!confirm('¿Reiniciar para TODOS?'))return;cant=[];act=0;ui();await sb.from('bingo_juego').update({bola_actual:0,historial:''}).eq('id',1);}function genCarton(){let c=document.getElementById('carton');c.innerHTML='';let rang=[[1,15],[16,30],[31,45],[46,60],[61,75]];let cols=[];for(let i=0;i<5;i++){let pool=[];for(let j=rang[i][0];j<=rang[i][1];j++)pool.push(j);let a=[];for(let k=0;k<5;k++)a.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);cols.push(a);}for(let f=0;f<5;f++)for(let col=0;col<5;col++){let d=document.createElement('div');d.className='cc';if(f==2&&col==2){d.textContent='★';d.style.background='#f59e0b';d.classList.add('on');}else{let v=cols[col][f];d.textContent=v;d.dataset.n=v;d.onclick=()=>d.classList.toggle('on');}c.appendChild(d);}}init();</script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bingo 75 Caimbe ONLINE</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:sans-serif;background:#0f172a;color:#fff;padding:12px}
+.header{text-align:center;padding:14px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:16px;margin-bottom:12px}
+.badge{display:inline-block;background:#22c55e;color:#000;font-weight:800;padding:5px 12px;border-radius:20px;font-size:13px;margin-top:6px}
+.panel{background:#1e293b;border-radius:16px;padding:14px;border:1px solid #334155;margin-bottom:12px}
+.bola{width:150px;height:150px;margin:0 auto;background:radial-gradient(circle at 30% 30%,#fef08a,#f59e0b);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#000;font-weight:900;border:6px solid #fff}
+.btn{width:100%;padding:16px;border:none;border-radius:12px;font-weight:800;font-size:18px;margin-top:10px}
+.btn-cantar{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+.btn-reset{background:#334155;color:#94a3b8;font-size:14px;padding:10px}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.col{background:#0f172a;border-radius:10px;padding:6px;text-align:center;min-height:200px}
+.num{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:#1e293b;border:1px solid #334155;color:#64748b;margin:2px}
+.num.on{background:#f59e0b;color:#000;border-color:#fff}
+.carton{max-width:340px;margin:15px auto;background:#fff;border-radius:12px;padding:10px;color:#000}
+.cg{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
+.cc{aspect-ratio:1;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;cursor:pointer;border:2px solid #e2e8f0}
+.cc.on{background:#22c55e;color:#fff;border-color:#16a34a}
+.hist{display:flex;gap:6px;overflow-x:auto;padding:8px 0}
+.hi{min-width:44px;height:44px;background:#f59e0b;color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>BINGO 75</h1>
+<div>Barrio Caimbé - Boa Vista</div>
+<div class="badge">● ONLINE - Todos ven la misma bola</div>
+</div>
+
+<div class="panel" style="text-align:center">
+<div style="font-size:12px;color:#94a3b8">BOLA ACTUAL</div>
+<div class="bola"><span id="L" style="font-size:20px">-</span><span style="font-size:54px" id="N">--</span></div>
+<button class="btn btn-cantar" onclick="cantar()">🎲 CANTAR BOLA</button>
+<button class="btn btn-reset" onclick="resetear()">Reiniciar (admin)</button>
+<div id="est" style="font-size:13px;color:#94a3b8;margin-top:8px">Conectando...</div>
+<div class="hist" id="his"></div>
+</div>
+
+<div class="panel">
+<div class="grid">
+<div class="col"><b style="color:#ef4444">B</b><div id="colB"></div></div>
+<div class="col"><b style="color:#f59e0b">I</b><div id="colI"></div></div>
+<div class="col"><b style="color:#22c55e">N</b><div id="colN"></div></div>
+<div class="col"><b style="color:#3b82f6">G</b><div id="colG"></div></div>
+<div class="col"><b style="color:#a855f7">O</b><div id="colO"></div></div>
+</div>
+
+<div class="carton">
+<div style="text-align:center;font-weight:900;letter-spacing:6px">B I N G O</div>
+<div class="cg" id="carton"></div>
+<div style="text-align:center;margin-top:10px"><button onclick="genCarton()" style="padding:8px 14px;border-radius:8px;border:none;background:#0f172a;color:#fff;font-weight:700">Nuevo Cartón</button></div>
+</div>
+</div>
+
+<script>
+const SUPA_URL='https://fueinabwnlswcahofcjq.supabase.co';
+const SUPA_KEY='sb_publishable_BeKRsHiTBwnzs6fXS4aVyw_WvijjCvw';
+const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+let cant=[], act=0;
+
+function letra(n){ if(n<=15)return'B'; if(n<=30)return'I'; if(n<=45)return'N'; if(n<=60)return'G'; return'O'; }
+
+function tablero(){
+  const rang={B:[1,15],I:[16,30],N:[31,45],G:[46,60],O:[61,75]};
+  for(let k in rang){
+    const c=document.getElementById('col'+k); c.innerHTML='';
+    for(let i=rang[k][0];i<=rang[k][1];i++){
+      let d=document.createElement('div'); d.className='num'; d.id='b-'+i; d.textContent=i; c.appendChild(d);
+    }
+  }
+}
+function ui(){
+  document.querySelectorAll('.num').forEach(x=>x.classList.remove('on'));
+  cant.forEach(n=>{ let e=document.getElementById('b-'+n); if(e) e.classList.add('on'); });
+  if(act){ document.getElementById('L').textContent=letra(act); document.getElementById('N').textContent=act; }
+  let h=document.getElementById('his'); h.innerHTML='';
+  [...cant].reverse().slice(0,15).forEach(n=>{ let d=document.createElement('div'); d.className='hi'; d.textContent=letra(n)+n; h.appendChild(d); });
+  document.getElementById('est').textContent= cant.length? cant.length+'/75 cantadas' : '¡Conectado! Listo para jugar';
+  document.querySelectorAll('.cc').forEach(e=>{ if(e.dataset.n && cant.includes(+e.dataset.n)) e.classList.add('on'); });
+}
+function genCarton(){
+  let c=document.getElementById('carton'); c.innerHTML='';
+  let rang=[[1,15],[16,30],[31,45],[46,60],[61,75]];
+  let cols=[];
+  for(let i=0;i<5;i++){ let pool=[]; for(let j=rang[i][0];j<=rang[i][1];j++) pool.push(j); let a=[]; for(let k=0;k<5;k++) a.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); cols.push(a); }
+  for(let f=0;f<5;f++) for(let col=0;col<5;col++){
+    let d=document.createElement('div'); d.className='cc';
+    if(f==2&&col==2){ d.textContent='★'; d.style.background='#f59e0b'; d.classList.add('on'); }
+    else { let v=cols[col][f]; d.textContent=v; d.dataset.n=v; d.onclick=()=>d.classList.toggle('on'); }
+    c.appendChild(d);
+  }
+  ui();
+}
+async function init(){
+  tablero(); genCarton();
+  try{
+    let {data}=await sb.from('bingo_juego').select('*').eq('id',1).single();
+    if(data){ cant=data.historial? data.historial.split(',').filter(x=>x).map(Number):[]; act=data.bola_actual||0; ui(); }
+    sb.channel('bingo').on('postgres_changes',{event:'*',schema:'public',table:'bingo_juego',filter:'id=eq.1'},p=>{
+      let d=p.new; cant=d.historial? d.historial.split(',').filter(x=>x).map(Number):[]; act=d.bola_actual||0; ui();
+    }).subscribe();
+  }catch(e){ document.getElementById('est').textContent='Modo offline - cartón funciona'; console.log(e); }
+}
+async function cantar(){
+  if(cant.length>=75) return alert('¡Bingo terminado!');
+  let n; do{ n=Math.floor(Math.random()*75)+1 }while(cant.includes(n));
+  cant.push(n); act=n; ui();
+  await sb.from('bingo_juego').update({bola_actual:n,historial:cant.join(',')}).eq('id',1);
+}
+async function resetear(){
+  if(!confirm('¿Reiniciar para TODOS los vecinos?')) return;
+  cant=[]; act=0; ui(); genCarton();
+  await sb.from('bingo_juego').update({bola_actual:0,historial:''}).eq('id',1);
+}
+init();
+</script>
+</body>
+</html>
