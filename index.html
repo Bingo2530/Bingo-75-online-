@@ -25,7 +25,7 @@ button{padding:10px 18px;border-radius:20px;border:none;font-weight:bold;cursor:
 </div>
 <div id="cartones"></div>
 
-<script>
+function crearCarton(){let nums=[];for(let i=0;i<15;i++)
 let cartones=[]; let bolas=[]; let colores=["#ffb6d9","#a0e7ff","#b9fbc0","#fff475","#000000","#ff1493"];
 function crearCarton(){let nums=[];for(let i=0;i<15;i++)nums.push(Math.floor(Math.random()*75)+1); return {nums, marcados:[], color:colores[0]}}
 function agregarCarton(){if(cartones.length>=6)return alert("Max 6");cartones.push(crearCarton());render()}
